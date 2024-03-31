@@ -9,11 +9,11 @@ implicit none
 private
 
 interface push_stack
-procedure push_stack_r, cpush_stack, rpush_stack
+procedure :: push_stack_r, cpush_stack, rpush_stack
 end interface push_stack
 
 interface printx
-procedure printx_r, cprintx, rprintx
+procedure :: printx_r, cprintx, rprintx
 end interface
 
 complex(wp), parameter, private :: c0 = (0, 0)

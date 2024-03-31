@@ -5,39 +5,39 @@ use assert, only: wp
 implicit none
 
 interface csc
-procedure csc_r, csc_c
+procedure :: csc_r, csc_c
 end interface csc
 
 interface acsc
-procedure acsc_r, acsc_c
+procedure :: acsc_r, acsc_c
 end interface acsc
 
 interface sec
-procedure sec_r, sec_c
+procedure :: sec_r, sec_c
 end interface sec
 
 interface asec
-procedure asec_r, asec_c
+procedure :: asec_r, asec_c
 end interface asec
 
 interface cot
-procedure cot_r, cot_c
+procedure :: cot_r, cot_c
 end interface cot
 
 interface acot
-procedure acot_r, acot_c
+procedure :: acot_r, acot_c
 end interface acot
 
 interface hav
-procedure hav_r, hav_c
+procedure :: hav_r, hav_c
 end interface hav
 
 interface ahav
-procedure ahav_r, ahav_c
+procedure :: ahav_r, ahav_c
 end interface ahav
 
 interface crd
-procedure crd_r, crd_c
+procedure :: crd_r, crd_c
 end interface crd
 
 contains

@@ -9,7 +9,7 @@ use, intrinsic:: ieee_arithmetic, only: ieee_is_finite, ieee_is_nan
 implicit none
 
 interface isclose
-  procedure isclose_r, isclose_ri, isclose_c
+  procedure :: isclose_r, isclose_ri, isclose_c
 end interface isclose
 
 private

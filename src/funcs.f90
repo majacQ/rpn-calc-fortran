@@ -13,19 +13,19 @@ use fgamma
 implicit none
 
 interface cuberoot
-procedure cuberoot_r, cuberoot_c
+procedure :: cuberoot_r, cuberoot_c
 end interface cuberoot
 
 interface frac
-procedure frac_r, frac_c
+procedure :: frac_r, frac_c
 end interface frac
 
 interface sinc
-procedure sinc_r, sinc_c
+procedure :: sinc_r, sinc_c
 end interface sinc
 
 interface tanc
-procedure tanc_r, tanc_c
+procedure :: tanc_r, tanc_c
 end interface tanc
 
 real(wp), parameter, private :: xinf = huge(0._wp), xmax = xinf, xmin = tiny(0._wp)
