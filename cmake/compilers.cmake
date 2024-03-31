@@ -1,7 +1,7 @@
 include(GNUInstallDirs)
-include(CheckFortranSourceCompiles)
+include(CheckSourceCompiles)
 
-check_fortran_source_compiles(
+check_source_compiles(Fortran
 "
 program a
 use, intrinsic :: ieee_arithmetic, only : ieee_next_after
@@ -10,11 +10,10 @@ print *, ieee_next_after(0.,0.)
 end program
 "
 f03ieee
-SRC_EXT f90
 )
 
 
-check_fortran_source_compiles(
+check_source_compiles(Fortran
 [=[
 program a
 implicit none
@@ -25,7 +24,6 @@ print *, x%RE, x%IM
 end program
 ]=]
 f08prop
-SRC_EXT f90
 )
 
 if(NOT f08prop)
@@ -33,7 +31,7 @@ if(NOT f08prop)
 endif()
 
 
-check_fortran_source_compiles(
+check_source_compiles(Fortran
 [=[
 program a
 implicit none
@@ -44,7 +42,6 @@ print *, acosh(x)
 end program
 ]=]
 f08hyper
-SRC_EXT f90
 )
 
 if(NOT f08hyper)

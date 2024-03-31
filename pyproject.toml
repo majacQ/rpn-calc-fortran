@@ -1,0 +1,7 @@
+[tool.black]
+line-length = 90
+
+[tool.mypy]
+files = ["test"]
+
+ignore_missing_imports = true
