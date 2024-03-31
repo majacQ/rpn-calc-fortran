@@ -34,21 +34,6 @@ target_compile_definitions(assert PRIVATE $<$<NOT:$<BOOL:${f03ieee}>>:NO_IEEE>)
 add_subdirectory(src)
 
 if(${PROJECT_NAME}_BUILD_TESTING)
-  find_package(Python COMPONENTS Interpreter)
-
-  if(Python_FOUND AND NOT DEFINED Scipy_ok)
-    execute_process(COMMAND ${Python_EXECUTABLE} -c "import scipy; print('SciPy', scipy.__version__)"
-    ERROR_VARIABLE err
-    RESULT_VARIABLE ret
-    )
-    message(VERBOSE "${ret} ${err}")
-    if(ret EQUAL 0)
-      set(Scipy_ok true CACHE BOOL "Scipy OK")
-    else()
-      set(Scipy_ok false CACHE BOOL "Scipy Not Found")
-    endif()
-  endif()
-
   add_subdirectory(test)
 endif()
 

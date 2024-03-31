@@ -1,4 +1,19 @@
-#--- tests
+find_package(Python COMPONENTS Interpreter)
+
+if(Python_FOUND AND NOT DEFINED Scipy_ok)
+  execute_process(COMMAND ${Python_EXECUTABLE} -c "import scipy; print('SciPy', scipy.__version__)"
+  ERROR_VARIABLE err
+  RESULT_VARIABLE ret
+  )
+  message(VERBOSE "${ret} ${err}")
+  if(ret EQUAL 0)
+    set(Scipy_ok true CACHE BOOL "Scipy OK")
+  else()
+    set(Scipy_ok false CACHE BOOL "Scipy Not Found")
+  endif()
+endif()
+
+
 add_executable(testcalc test.f90)
 target_link_libraries(testcalc PRIVATE assert funcs hyper reg)
 
@@ -14,9 +29,7 @@ set_property(TEST Value PROPERTY PASS_REGULAR_EXPRESSION "308 / 29")
 
 get_property(test_names DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY TESTS)
 
-
-if(Scipy_ok)
-  add_test(NAME FunctionEval
-  COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_functions.py $<TARGET_FILE:rpncalc>
-  )
-endif()
+add_test(NAME FunctionEval
+COMMAND Python::Interpreter ${CMAKE_CURRENT_SOURCE_DIR}/test_functions.py $<TARGET_FILE:rpncalc>
+)
+set_property(TEST FunctionEval PROPERTY DISABLED $<NOT:$<BOOL:${Scipy_ok}>>)
