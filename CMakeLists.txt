@@ -1,48 +1,45 @@
-cmake_minimum_required(VERSION 3.19...3.22)
-
-file(READ ${CMAKE_CURRENT_LIST_DIR}/codemeta.json _j)
-string(JSON PROJECT_VERSION GET ${_j} version)
+cmake_minimum_required(VERSION 3.19...3.29)
 
 project(RPNcalc
 LANGUAGES Fortran
-VERSION ${PROJECT_VERSION}
-HOMEPAGE_URL https://github.com/scivision/rpn-calc-fortran)
+VERSION 1.4.1
+)
 
-include(CTest)
+enable_testing()
+
+option(${PROJECT_NAME}_BUILD_TESTING "build tests" on)
 
 include(cmake/compilers.cmake)
 
-add_executable(rpncalc)
+file(GENERATE OUTPUT .gitignore CONTENT "*")
+
+
+set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
+
+add_executable(rpncalc app/main.f90 src/help.f90 src/eval.f90 src/ui.f90)
+target_include_directories(rpncalc PUBLIC
+$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
 target_link_libraries(rpncalc PRIVATE assert hyper reg funcs)
-install(TARGETS rpncalc)
 
 #--- functions (usable in other programs too)
-add_library(assert OBJECT src/tests/assert.f90)
-target_include_directories(assert INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-set_target_properties(assert PROPERTIES
-  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
+add_library(assert OBJECT src/assert.F90)
+target_include_directories(assert PUBLIC
+$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+target_compile_definitions(assert PRIVATE $<$<NOT:$<BOOL:${f03ieee}>>:NO_IEEE>)
 
 add_subdirectory(src)
-set(_targs assert rpncalc funcs hyper reg)
 
-if(BUILD_TESTING)
-  add_subdirectory(src/tests)
-  list(APPEND _targs testcalc)
-endif(BUILD_TESTING)
+if(${PROJECT_NAME}_BUILD_TESTING)
+  add_subdirectory(test)
+endif()
 
-#--- properties
-foreach(t ${_targs})
-target_include_directories(${t}
-PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include
-$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-$<INSTALL_INTERFACE:include>)
-set_target_properties(${t} PROPERTIES
-  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
-endforeach()
 
 #--- install
+install(TARGETS rpncalc)
 
 install(FILES ${PROJECT_SOURCE_DIR}/README.md
   DESTINATION share/docs/${PROJECT_NAME})

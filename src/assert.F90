@@ -2,12 +2,14 @@ module assert
 
 use, intrinsic:: iso_c_binding, only: sp=>c_float, dp=>c_double
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
-use, intrinsic:: ieee_arithmetic
+#ifndef NO_IEEE
+use, intrinsic:: ieee_arithmetic, only: ieee_is_finite, ieee_is_nan
+#endif
 
-implicit none (type, external)
+implicit none
 
 interface isclose
-procedure isclose_r, isclose_c
+  procedure :: isclose_r, isclose_ri, isclose_c
 end interface isclose
 
 private
@@ -42,6 +44,7 @@ logical :: n
 r = 1e-5_wp
 a = 0
 n = .false.
+isclose = .false.
 if (present(rtol)) r = rtol
 if (present(atol)) a = atol
 if (present(equal_nan)) n = equal_nan
@@ -49,16 +52,41 @@ if (present(equal_nan)) n = equal_nan
 !print*,r,a,n,actual,desired
 
 !--- sanity check
-if ((r < 0).or.(a < 0)) error stop 'invalid tolerance parameter(s)'
+if (r < 0 .or. a < 0) error stop 'invalid tolerance parameter(s)'
 !--- equal nan
-isclose = n.and.(ieee_is_nan(actual).and.ieee_is_nan(desired))
+#ifndef NO_IEEE
+isclose = n .and. all(ieee_is_nan([actual,desired]))
 if (isclose) return
 !--- Inf /= Inf, unequal NaN
-if (.not.ieee_is_finite(actual) .or. .not.ieee_is_finite(desired)) return
+if (.not. all(ieee_is_finite([actual,desired]))) return
+#endif
 !--- floating point closeness check
 isclose = abs(actual-desired) <= max(r * max(abs(actual), abs(desired)), a)
 
 end function isclose_r
+
+
+elemental logical function isclose_ri(actual, desired, rtol, atol) result(isclose)
+real(wp), intent(in) :: actual
+integer, intent(in) :: desired
+real(wp), intent(in), optional :: rtol, atol
+
+real(wp) :: r,a
+
+r = 1e-5_wp
+a = 0
+if (present(rtol)) r = rtol
+if (present(atol)) a = atol
+
+!--- sanity check
+if ((r < 0).or.(a < 0)) error stop 'invalid tolerance parameter(s)'
+#ifndef NO_IEEE
+if (.not.ieee_is_finite(actual)) return
+#endif
+!--- floating point closeness check
+isclose = abs(actual-desired) <= max(r * max(abs(actual), real(abs(desired))), a)
+
+end function isclose_ri
 
 
 elemental logical function isclose_c(actual, desired, rtol, atol) result(isclose)
@@ -79,13 +107,11 @@ complex(wp), intent(in) :: actual, desired
 real(wp), intent(in), optional :: rtol, atol
 
 real(wp) :: r,a
-! this is appropriate INSTEAD OF merge(), since non present values aren't defined.
+
 r = 1e-5_wp
 a = 0
 if (present(rtol)) r = rtol
 if (present(atol)) a = atol
-
-!print*,r,a,n,actual,desired
 
 !--- sanity check
 if ((abs(r) < 0).or.(abs(a) < 0)) error stop 'impossible rel or abs tolerance'

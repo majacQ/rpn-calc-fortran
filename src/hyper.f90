@@ -1,37 +1,78 @@
 module hyper
-use, intrinsic:: ieee_arithmetic
-use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
+
 use assert, only: wp
-use rat, only: SWITCH_RAT_TO_REAL
 use global
 
-implicit none (type, external)
+implicit none
+
+private
 
 interface sech
-procedure sech_r, sech_c
+procedure :: sech_r, sech_c
 end interface sech
 
 interface asech
-procedure asech_r, asech_c
+procedure :: asech_r, asech_c
 end interface asech
 
 interface csch
-procedure csch_r, csch_c
+procedure :: csch_r, csch_c
 end interface csch
 
 interface acsch
-procedure acsch_r, acsch_c
+procedure :: acsch_r, acsch_c
 end interface acsch
 
 interface coth
-procedure coth_r, coth_c
+procedure :: coth_r, coth_c
 end interface coth
 
 interface acoth
-procedure acoth_r, acoth_c
+procedure :: acoth_r, acoth_c
 end interface acoth
 
+public :: sech, asech, csch, acsch, coth, acoth, tanhc, ctanhc
+
 contains
+
+
+!***********************************************************************************************************************************
+!  TANHC
+!
+!  Tanhc function.
+!***********************************************************************************************************************************
+
+elemental real(wp) FUNCTION TANHC (X) RESULT (Y)
+
+real(wp), INTENT(IN) :: X
+
+IF (X .EQ. 0._wp) THEN
+   Y = 1
+ELSE
+   Y = TANH(X) / X
+END IF
+
+
+END FUNCTION TANHC
+
+
+!***********************************************************************************************************************************
+!  CTANHC
+!
+!  Complex tanhc function.
+!***********************************************************************************************************************************
+
+elemental complex(wp) FUNCTION CTANHC (Z) RESULT (Y)
+
+COMPLEX(wp), INTENT(IN) :: Z
+
+IF (Z .EQ. (0._wp, 0._wp)) THEN
+   Y = (1._wp, 0._wp)
+ELSE
+   Y = TANH(Z) / Z
+END IF
+
+END FUNCTION CTANHC
 
 !***********************************************************************************************************************************
 !  SECH
@@ -42,14 +83,14 @@ contains
 elemental real(wp) FUNCTION SECH_r(X) result(sech)
 real(wp), INTENT (IN) :: X
 
-sech = 1._wp/COSH(X)
+sech = 1/COSH(X)
 END FUNCTION SECH_r
 
 
 elemental complex(wp) FUNCTION SECH_c(Z) RESULT(sech)
 COMPLEX(wp), INTENT (IN) :: Z
 
-sech = 1._wp/cosh(Z)
+sech = 1/cosh(Z)
 END FUNCTION SECH_c
 
 
@@ -63,14 +104,14 @@ END FUNCTION SECH_c
 elemental real(wp) FUNCTION ASECH_r(y) result(asech)
 real(wp), INTENT (IN) :: Y
 
-asech = ACOSH(1._wp/Y)
+asech = ACOSH(1/Y)
 END FUNCTION ASECH_r
 
 
 elemental complex(wp) FUNCTION ASECH_c(Y) result(asech)
 COMPLEX(wp), INTENT (IN) :: Y
 
-asech = ACOSH(1._wp/Y)
+asech = ACOSH(1/Y)
 
 END FUNCTION ASECH_c
 
@@ -83,14 +124,14 @@ END FUNCTION ASECH_c
 elemental real(wp) FUNCTION CSCH_r(X) RESULT (Y)
 real(wp), INTENT (IN) :: X
 
-Y = 1._wp/SINH(X)
+Y = 1/SINH(X)
 END FUNCTION CSCH_r
 
 
 elemental complex(wp) FUNCTION CSCH_c(Z) RESULT (Y)
 COMPLEX(wp), INTENT (IN) :: Z
 
-Y = 1._wp / SINH(Z)
+Y = 1 / SINH(Z)
 END FUNCTION CSCH_c
 
 !***********************************************************************************************************************************
@@ -102,14 +143,14 @@ END FUNCTION CSCH_c
 elemental real(wp) FUNCTION ACSCH_r(Y) RESULT (X)
 real(wp), INTENT (IN) :: Y
 
-X = ASINH(1._wp/Y)
+X = ASINH(1/Y)
 END FUNCTION ACSCH_r
 
 
 elemental complex(wp) FUNCTION ACSCH_c(Y) RESULT (X)
 COMPLEX(wp), INTENT (IN) :: Y
 
-X = ASINH(1._wp/Y)
+X = ASINH(1/Y)
 
 END FUNCTION ACSCH_c
 
@@ -123,14 +164,14 @@ END FUNCTION ACSCH_c
 elemental real(wp) FUNCTION COTH_r(X) result(coth)
 real(wp), INTENT (IN) :: X
 
-coth = 1._wp/TANH(X)
+coth = 1/TANH(X)
 END FUNCTION COTH_r
 
 
 elemental complex(wp) FUNCTION COTH_c(Z) result(coth)
 COMPLEX(wp), INTENT (IN) :: Z
 
-COTH = 1._wp / tanh(Z)
+COTH = 1 / tanh(Z)
 END FUNCTION COTH_c
 
 
@@ -144,86 +185,15 @@ END FUNCTION COTH_c
 elemental real(wp) FUNCTION ACOTH_r(Y) result(acoth)
 real(wp), INTENT (IN) :: Y
 
-ACOTH = ATANH(1._wp/Y)
+ACOTH = ATANH(1/Y)
 END FUNCTION ACOTH_r
 
 
 elemental complex(wp) FUNCTION ACOTH_c(Z) result(acoth)
 COMPLEX(wp), INTENT(IN) :: Z
 
-acoth = 0.5_wp*LOG((Z+1._wp)/(Z-1._wp))
+acoth = 0.5_wp*LOG((Z+1)/(Z-1))
 END FUNCTION ACOTH_c
 
-!-------------------------------------------------
-subroutine hasin(domain_mode)
-integer, intent(in) :: domain_mode
-
-SELECT CASE (DOMAIN_MODE)
-  CASE (1)
-     LASTX = STACK(1)
-     STACK(1) = ASINH(STACK(1))
-  CASE (2)
-     CLASTX = CSTACK(1)
-     CSTACK(1) = ASINH(CSTACK(1))
-  CASE (3)
-     CALL SWITCH_RAT_TO_REAL
-     LASTX = STACK(1)
-     STACK(1) = ASINH(STACK(1))
-END SELECT
-
-end subroutine hasin
-
-
-subroutine hacos(domain_mode)
-integer, intent(in) :: domain_mode
-
-   SELECT CASE (DOMAIN_MODE)
-      CASE (1)
-         IF (STACK(1) < 1._wp) THEN
-            write(stderr, *) '  ACOSH Error'
-         ELSE
-            LASTX = STACK(1)
-            STACK(1) = ACOSH(STACK(1))
-         END IF
-      CASE (2)
-         CLASTX = CSTACK(1)
-         CSTACK(1) = ACOSH(CSTACK(1))
-      CASE (3)
-         IF (RNSTACK(1) < RDSTACK(1)) THEN
-            write(stderr, *) '  ACOSH Error'
-         ELSE
-            CALL SWITCH_RAT_TO_REAL
-            LASTX = STACK(1)
-            STACK(1) = ACOSH(STACK(1))
-         END IF
-   END SELECT
-end subroutine hacos
-
-
-subroutine hatan(domain_mode)
-integer, intent(in) :: domain_mode
-
-SELECT CASE (DOMAIN_MODE)
-  CASE (1)
-     IF (ABS(STACK(1)) >= 1._wp) THEN
-        write(stderr, *) '  ATANH Error'
-     ELSE
-        LASTX = STACK(1)
-        STACK(1) = ATANH(STACK(1))
-     END IF
-  CASE (2)
-     CLASTX = CSTACK(1)
-     CSTACK(1) = ATANH(CSTACK(1))
-  CASE (3)
-     IF (ABS(RNSTACK(1)) >= ABS(RDSTACK(1))) THEN
-        write(stderr, *) '  ATANH Error'
-     ELSE
-        CALL SWITCH_RAT_TO_REAL
-        LASTX = STACK(1)
-        STACK(1) = ATANH(STACK(1))
-     END IF
-END SELECT
-
-end subroutine hatan
 
 end module hyper

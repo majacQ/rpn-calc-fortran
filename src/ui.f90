@@ -5,17 +5,20 @@ use global
 use assert, only: wp, isclose
 use funcs
 
-implicit none (type, external)
+implicit none
+private
 
 interface push_stack
-procedure push_stack_r, cpush_stack, rpush_stack
+procedure :: push_stack_r, cpush_stack, rpush_stack
 end interface push_stack
 
 interface printx
-procedure printx_r, cprintx, rprintx
+procedure :: printx_r, cprintx, rprintx
 end interface
 
-complex(wp), parameter, private :: c0 = (0._wp, 0._wp)
+complex(wp), parameter, private :: c0 = (0, 0)
+
+public :: drop_stack, cdrop_stack, rdrop_stack, push_stack, printx
 
 contains
 
@@ -78,7 +81,7 @@ INTEGER, INTENT(IN) :: N
 
 STACK(N:stack_size-1) = STACK(N+1:stack_size)
 
-stack(stack_size) = 0._wp
+stack(stack_size) = 0
 
 END SUBROUTINE DROP_STACK
 
@@ -94,7 +97,7 @@ INTEGER, INTENT(IN) :: N
 
  CSTACK(N:stack_size-1) = CSTACK(N+1:stack_size)
 
- Cstack(stack_size) = 0._wp
+ Cstack(stack_size) = 0
 
 END SUBROUTINE CDROP_STACK
 
@@ -146,7 +149,7 @@ IF (BASE_MODE == 10) THEN                                                   ! DE
          IF (INDEX(NUMSTR,'*') /= 0)  WRITE(NUMSTR, F2) X
 
          READ (NUMSTR, *) TMPX
-         IF (.not.isclose(x, 0._wp) .AND. isclose(TMPX,0._wp)) WRITE (NUMSTR, F2) X      !   disp. underflow
+         IF (.not.isclose(x, 0) .AND. isclose(TMPX,0)) WRITE (NUMSTR, F2) X      !   disp. underflow
       CASE (2)                                                                ! print X (SCI)
          WRITE (NUMSTR, F2) X
       CASE (3)                                                                ! print X (ENG)
@@ -186,41 +189,41 @@ END SUBROUTINE PRINTX_r
             CASE (1)                                                                ! print X (FIX)
                WRITE (UNIT=FMTSTR, FMT=800) DISP_DIGITS, DISP_DIGITS
   800          FORMAT ("(ES25.",I0,",SP,4X,F25.",I0,")")
-               WRITE (UNIT=NUMSTR, FMT=FMTSTR) REAL(X, WP), AIMAG(X)
+               WRITE (UNIT=NUMSTR, FMT=FMTSTR) X%RE, X%IM
                IF (INDEX(NUMSTR,'*') /= 0) THEN                                   !   disp. overflow
                   WRITE (UNIT=FMTSTR, FMT=810)  DISP_DIGITS, DISP_DIGITS
   810             FORMAT ("(EN25.",I0,",SP,4X,ES25.",I0,")")
-                  WRITE (UNIT=NUMSTR, FMT=FMTSTR) REAL(X, WP), AIMAG(X)
+                  WRITE (UNIT=NUMSTR, FMT=FMTSTR) X%RE, X%IM
                END IF
                READ (UNIT=NUMSTR, FMT=*) TMPX
                IF (.not.isclose(x, C0) .AND. isclose(TMPX, C0)) THEN                     !   disp. underflow
                   WRITE (UNIT=FMTSTR, FMT=820) DISP_DIGITS, DISP_DIGITS
   820             FORMAT ("(EN25.",I0,",SP,4X,ES25.",I0,")")
-                  WRITE (UNIT=NUMSTR, FMT=FMTSTR) REAL(X, WP), AIMAG(X)
+                  WRITE (UNIT=NUMSTR, FMT=FMTSTR) X%RE, X%IM
                END IF
             CASE (2)                                                                ! print X (SCI)
                WRITE (UNIT=FMTSTR, FMT=830) DISP_DIGITS, DISP_DIGITS
   830          FORMAT ("(ES25.",I0,",SP,4X,ES25.",I0,")")
-               WRITE (UNIT=NUMSTR, FMT=FMTSTR) REAL(X, WP), AIMAG(X)
+               WRITE (UNIT=NUMSTR, FMT=FMTSTR) X%RE, X%IM
             CASE (3)                                                                ! print X (ENG)
                WRITE (UNIT=FMTSTR, FMT=840) DISP_DIGITS, DISP_DIGITS
   840          FORMAT ("(EN25.",I0,",SP,4X,ES25.",I0,")")
-               WRITE (UNIT=NUMSTR, FMT=FMTSTR) REAL(X, WP), AIMAG(X)
+               WRITE (UNIT=NUMSTR, FMT=FMTSTR) X%RE, X%IM
             CASE (4)                                                            ! print X (ALL)
                WRITE (UNIT=FMTSTR, FMT='(A)') '(1PG23.15,SP,4X,G23.15)'
-               WRITE (UNIT=NUMSTR, FMT=FMTSTR) REAL(X, WP), AIMAG(X)
+               WRITE (UNIT=NUMSTR, FMT=FMTSTR) X%RE, X%IM
          END SELECT
       ELSE
          SELECT CASE (BASE_MODE)
             CASE (2)                                                                ! print X (BIN)
                WRITE (UNIT=FMTSTR, FMT='(A)') '(B0,4X,B0,2H i)'
-               WRITE (UNIT=NUMSTR, FMT=FMTSTR) INT(REAL(X, WP)), INT(AIMAG(X))
+               WRITE (UNIT=NUMSTR, FMT=FMTSTR) INT(X%RE), INT(X%IM)
             CASE (8)                                                                ! print X (OCT)
                WRITE (UNIT=FMTSTR, FMT='(A)') '(O0,4X,O0,2H i)'
-               WRITE (UNIT=NUMSTR, FMT=FMTSTR) INT(REAL(X, WP)), INT(AIMAG(X))
+               WRITE (UNIT=NUMSTR, FMT=FMTSTR) INT(X%RE), INT(X%IM)
             CASE (16)                                                               ! print X (HEX)
                WRITE (UNIT=FMTSTR, FMT='(A)') '(Z0,4X,Z0,2H i)'
-               WRITE (UNIT=NUMSTR, FMT=FMTSTR) INT(REAL(X, WP)), INT(AIMAG(X))
+               WRITE (UNIT=NUMSTR, FMT=FMTSTR) INT(X%RE), INT(X%IM)
          END SELECT
       END IF
 
