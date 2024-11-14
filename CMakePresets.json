@@ -6,7 +6,12 @@
   "name": "default",
   "binaryDir": "${sourceDir}/build",
   "cacheVariables": {
-    "CMAKE_COMPILE_WARNING_AS_ERROR": true
+    "CMAKE_COMPILE_WARNING_AS_ERROR": true,
+    "CMAKE_LINK_WARNING_AS_ERROR": true
+  },
+  "environment": {
+    "CTEST_PARALLEL_LEVEL": "0",
+    "CTEST_NO_TESTS_ACTION": "error"
   }
 }
 ],
